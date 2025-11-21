@@ -14,18 +14,19 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 
 const menu = [
-  { href: "/admin", label: "Dashboard", icon: Home },
-  { href: "/admin/employees", label: "Employees", icon: Users },
-  { href: "/admin/stores", label: "Stores", icon: Store },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/sales", label: "Sales & Orders", icon: ShoppingCart },
-  { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
-  { href: "/admin/messaging", label: "Messaging", icon: MessageSquare },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/logs", label: "Activity Logs", icon: FileText },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/", label: "Dashboard", icon: Home },
+  { href: "/employees", label: "Employees", icon: Users },
+  { href: "/stores", label: "Stores", icon: Store },
+  { href: "/users", label: "Users", icon: Users },
+  { href: "/sales", label: "Sales & Orders", icon: ShoppingCart },
+  { href: "/reviews", label: "Reviews", icon: MessageSquare },
+  { href: "/messaging", label: "Messaging", icon: MessageSquare },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/logs", label: "Activity Logs", icon: FileText },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function AdminSidebar() {
@@ -35,11 +36,8 @@ export default function AdminSidebar() {
     <aside className="w-64 bg-white shadow-lg flex flex-col">
       <div className="p-5 border-b">
         <h1 className="text-2xl font-bold text-indigo-600">BuyBot Admin</h1>
+        <ThemeToggle />
       </div>
-<div className="flex items-center justify-between p-5 border-b">
-  <h1 className="text-2xl font-bold text-indigo-600">BuyBot Admin</h1>
-  <ThemeToggle />
-</div>
       <nav className="flex-1 p-4 space-y-1">
         {menu.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-
+import { exportToCSV } from "@/lib/exportToCSV";
 type Store = {
   id: number;
   name: string;
@@ -34,13 +34,36 @@ export default function StoresPage() {
     // await fetch(`/api/admin/stores/${id}/${act}`, {method: "POST"});
     setStores((prev) => prev.map((s) => (s.id === id ? { ...s, status: act === "accept" ? "Active" : (act.charAt(0).toUpperCase() + act.slice(1)) as any } : s)));
   };
+const handleExport = () => {
+  if (stores.length === 0) {
+    alert("No data to export");
+    return;
+  }
+
+  const headers = ["ID", "Name", "Status", "Sales", "Reviews"];
+  const rows = stores.map((s) => [s.id, s.name, s.status, s.sales, s.reviews]);
+
+  let csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "stores.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Store Management</h1>
 
       <Input placeholder="Search stores..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
-
+ <Button onClick={handleExport} variant="outline">
+    Export CSV
+  </Button>
       <Table>
         <TableHeader>
           <TableRow>
