@@ -18,6 +18,8 @@ import ThemeToggle from "./ThemeToggle";
 
 const menu = [
   { href: "/", label: "Dashboard", icon: Home },
+  { href: "/products", label: "Products", icon: Home },
+  { href: "/categories", label: "Categories", icon: BarChart3 },
   { href: "/employees", label: "Employees", icon: Users },
   { href: "/stores", label: "Stores", icon: Store },
   { href: "/users", label: "Users", icon: Users },
