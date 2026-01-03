@@ -11,7 +11,7 @@ type Employee = { id: number; name: string; email: string; role: "Admin" | "Empl
 
 export default function EmployeesPage() {
   const [list, setList] = useState<Employee[]>([]);
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "Employee" as const });
+  const [form, setForm] = useState<{ name: string; email: string; password: string; role: "Admin" | "Employee" }>({ name: "", email: "", password: "", role: "Employee" });
 
   // Load
   useEffect(() => {

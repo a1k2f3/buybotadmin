@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 
@@ -11,6 +12,51 @@ interface Category {
   };
   productCount: number;
   children: Category[];
+  parentCategory?: {
+    _id: string;
+    name: string;
+    slug: string;
+    id: string;
+  } | null;
+  description?: string;
+}
+
+function buildCategoryTree(categories: Category[]): Category[] {
+  const categoryMap = new Map<string, Category>();
+  categories.forEach(cat => {
+    categoryMap.set(cat._id, { ...cat, children: [] });
+  });
+
+  const tree: Category[] = [];
+
+  categories.forEach(cat => {
+    if (cat.parentCategory) {
+      const parent = categoryMap.get(cat.parentCategory._id);
+      if (parent) {
+        const child = categoryMap.get(cat._id);
+        if (child) {
+          parent.children.push(child);
+        }
+      }
+    } else {
+      const catItem = categoryMap.get(cat._id);
+      if (catItem) {
+        tree.push(catItem);
+      }
+    }
+  });
+
+  // Optional: Sort top-level categories by name
+  tree.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Optional: Sort children recursively
+  const sortChildren = (cat: Category) => {
+    cat.children.sort((a, b) => a.name.localeCompare(b.name));
+    cat.children.forEach(sortChildren);
+  };
+  tree.forEach(sortChildren);
+
+  return tree;
 }
 
 function Page() {
@@ -21,13 +67,14 @@ function Page() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/categories/tree`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/categories`);
         if (!response.ok) {
           throw new Error('Failed to fetch categories');
         }
         const json = await response.json();
         if (json.success) {
-          setCategories(json.data);
+          const nestedCategories = buildCategoryTree(json.data);
+          setCategories(nestedCategories);
         } else {
           throw new Error('API response was not successful');
         }
@@ -41,7 +88,6 @@ function Page() {
         setLoading(false);
       }
     };
-
     fetchCategories();
   }, []);
 
@@ -63,14 +109,14 @@ function Page() {
 
   return (
     <div style={styles.container}>
-        <div className="flex flex-row justify-between items-center gap-4 mb-6">
-  <h1 className="text-3xl font-bold text-gray-800">All Categories</h1>
-  <Link href="/categories/add">
-    <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
-      Add Categories
-    </button>
-  </Link>
-</div>
+      <div className="flex flex-row justify-between items-center gap-4 mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">All Categories</h1>
+        <Link href="/categories/add">
+          <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
+            Add Categories
+          </button>
+        </Link>
+      </div>
       <div style={styles.grid}>
         {categories.map((category) => (
           <div key={category._id} style={styles.card}>
@@ -83,6 +129,9 @@ function Page() {
               <h2 style={styles.cardTitle}>{category.name}</h2>
               <p style={styles.cardSlug}>Slug: {category.slug}</p>
               <p style={styles.cardCount}>Products: {category.productCount}</p>
+              {category.description && (
+                <p style={styles.cardDescription}>{category.description}</p>
+              )}
               {category.children.length > 0 ? (
                 <div style={styles.children}>
                   <h3 style={styles.childrenTitle}>Subcategories:</h3>
@@ -111,11 +160,6 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 auto',
     padding: '20px',
     fontFamily: 'Arial, sans-serif',
-  },
-  title: {
-    textAlign: 'center',
-    color: '#333',
-    marginBottom: '30px',
   },
   grid: {
     display: 'grid',
@@ -151,6 +195,11 @@ const styles: Record<string, React.CSSProperties> = {
   cardCount: {
     fontSize: '0.9em',
     color: '#666',
+    marginBottom: '10px',
+  },
+  cardDescription: {
+    fontSize: '0.9em',
+    color: '#555',
     marginBottom: '10px',
   },
   children: {
