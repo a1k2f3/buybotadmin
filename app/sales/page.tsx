@@ -40,6 +40,7 @@ type Product = {
 };
 
 type OrderItem = {
+  size: any;
   productId: Product;
   storeId: {
     _id: string;
@@ -86,9 +87,6 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-
-  const BASE_URL = "https://buybotbackend-production.up.railway.app";
-
   const fetchOrders = async () => {
     setLoading(true);
     try {
@@ -334,6 +332,7 @@ export default function SalesPage() {
                                             {item.productId.description}
                                           </div>
                                         )}
+                                        {item.size && (<div className="text-sm">Size: {item.size}</div>)  }
                                         <div className="text-sm">
                                           Quantity: {item.quantity} × ₹{item.price.toLocaleString("en-IN")}
                                           <span className="ml-4 font-semibold">
