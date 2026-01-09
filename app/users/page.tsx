@@ -68,7 +68,7 @@ export default function SalesPage() {
         setError(null);
 
         // Fetch all users (includes addresses and other details)
-        const usersRes = await fetch(`${API_BASE}/api/users/`);
+        const usersRes = await fetch(`${API_BASE}/api/users`);
         if (!usersRes.ok) throw new Error("Failed to fetch users");
         const usersData: User[] = await usersRes.json();
 
