@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,6 +14,7 @@ interface Product {
   _id: string;
   name: string;
   price: number;
+  discountPrice?: number | null;
   thumbnail: string;
   category?: { name: string; slug: string } | null;
   tags: Tag[];
@@ -24,12 +26,12 @@ export default function RandomProductsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Pagination states
+  // Pagination states – must be declared BEFORE useEffect
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  
-  const PRODUCTS_PER_PAGE = 12; // ← you can change this
+
+  const PRODUCTS_PER_PAGE = 12;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -40,24 +42,23 @@ export default function RandomProductsPage() {
         const query = new URLSearchParams({
           page: currentPage.toString(),
           limit: PRODUCTS_PER_PAGE.toString(),
-          // sort: 'createdAt:-1',     // optional
-          // fields: 'name,price,thumbnail,category,tags,images', // optional
+          // Optional: make sure your backend returns discountPrice
+          // fields: 'name,price,discountPrice,thumbnail,category,tags,images',
         });
 
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/products?${query.toString()}`
         );
 
-        if (!res.ok) {
-          throw new Error('Failed to fetch products');
-        }
+        if (!res.ok) throw new Error('Failed to fetch products');
 
         const data = await res.json();
 
         setProducts(data?.data || []);
         setTotalProducts(data?.total || 0);
-        setTotalPages(data?.pages || Math.ceil((data?.total || 0) / PRODUCTS_PER_PAGE) || 1);
-
+        setTotalPages(
+          data?.pages || Math.ceil((data?.total || 0) / PRODUCTS_PER_PAGE) || 1
+        );
       } catch (err: any) {
         setError(err.message || 'Something went wrong');
       } finally {
@@ -66,17 +67,15 @@ export default function RandomProductsPage() {
     };
 
     fetchProducts();
-  }, [currentPage]); // Re-fetch when page changes
+  }, [currentPage]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      // Optional: scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  // Simple pagination numbers logic
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisible = 5;
@@ -85,15 +84,9 @@ export default function RandomProductsPage() {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
-    // Always show first page
     pages.push(1);
+    if (currentPage > 3) pages.push('...');
 
-    // Ellipsis before middle pages
-    if (currentPage > 3) {
-      pages.push('...');
-    }
-
-    // Middle pages
     const start = Math.max(2, currentPage - 1);
     const end = Math.min(totalPages - 1, currentPage + 1);
 
@@ -101,15 +94,8 @@ export default function RandomProductsPage() {
       pages.push(i);
     }
 
-    // Ellipsis after middle pages
-    if (currentPage < totalPages - 2) {
-      pages.push('...');
-    }
-
-    // Always show last page
-    if (totalPages > 1) {
-      pages.push(totalPages);
-    }
+    if (currentPage < totalPages - 2) pages.push('...');
+    if (totalPages > 1) pages.push(totalPages);
 
     return pages;
   };
@@ -133,72 +119,93 @@ export default function RandomProductsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-2 sm:px-4">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8">Random Products</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">Explore Products</h1>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {products.map((product) => (
-            <div
-              key={product._id}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200 overflow-hidden"
-            >
-              <div className="relative h-48 w-full">
-                <Image
-                  src={product.thumbnail}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                />
-              </div>
+          {products.map((product) => {
+            const hasDiscount =
+              product.discountPrice != null &&
+              product.discountPrice > 0 &&
+              product.discountPrice < product.price;
 
-              <div className="p-3">
-                <h2 className="text-base font-semibold line-clamp-2 min-h-[2.5rem] mb-1">
-                  {product.name}
-                </h2>
-                <p className="text-lg font-bold text-indigo-700 mb-2">
-                  PKR {product.price.toLocaleString()}
-                </p>
+            const discountPercentage = hasDiscount
+              ? Math.round(
+                  ((product.price - (product.discountPrice ?? 0)) / product.price) * 100
+                )
+              : 0;
 
-                {product.category?.name && (
-                  <p className="text-xs text-gray-500 mb-2">
-                    {product.category.name}
-                  </p>
-                )}
+            return (
+              <Link
+                href={`/products/${product._id}`}
+                key={product._id}
+                className="group bg-white rounded-lg shadow hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col"
+              >
+                <div className="relative h-48 w-full bg-gray-100">
+                  <Image
+                    src={product.thumbnail}
+                    alt={product.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  />
 
-                {product.tags?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {product.tags.map((tag) => (
-                      <span
-                        key={tag.slug || tag.name}
-                        className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs"
-                      >
-                        {tag.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                  {hasDiscount && (
+                    <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
+                      {discountPercentage}% OFF
+                    </div>
+                  )}
+                </div>
 
-                {product.images?.length > 0 && (
-                  <div className="grid grid-cols-3 gap-1 mt-2">
-                    {product.images.slice(0, 3).map((img) => (
-                      <div key={img._id} className="relative aspect-square">
-                        <Image
-                          src={img.url}
-                          alt=""
-                          fill
-                          className="object-cover rounded"
-                          sizes="80px"
-                        />
+                <div className="p-4 flex flex-col flex-grow">
+                  <h2 className="text-base font-semibold line-clamp-2 min-h-[2.8rem] mb-2 group-hover:text-indigo-700 transition-colors">
+                    {product.name}
+                  </h2>
+
+                  {/* Price with discount */}
+                  <div className="mt-auto">
+                    {hasDiscount ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xl font-bold text-red-600">
+                          PKR {(product.discountPrice ?? 0).toLocaleString()}
+                        </span>
+                        <span className="text-sm text-gray-500 line-through">
+                          PKR {product.price.toLocaleString()}
+                        </span>
                       </div>
-                    ))}
+                    ) : (
+                      <span className="text-xl font-bold text-indigo-700">
+                        PKR {product.price.toLocaleString()}
+                      </span>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-          ))}
+
+                  {product.category?.name && (
+                    <p className="text-xs text-gray-500 mt-2">{product.category.name}</p>
+                  )}
+
+                  {product.tags?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {product.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag.slug || tag.name}
+                          className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs"
+                        >
+                          {tag.name}
+                        </span>
+                      ))}
+                      {product.tags.length > 3 && (
+                        <span className="text-xs text-gray-500 self-center">
+                          +{product.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
-        {/* No products */}
         {products.length === 0 && !loading && (
           <p className="text-center text-gray-500 text-xl mt-16">No products found.</p>
         )}
@@ -214,7 +221,7 @@ export default function RandomProductsPage() {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-white border rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                className="px-5 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
               >
                 Previous
               </button>
@@ -225,13 +232,11 @@ export default function RandomProductsPage() {
                   onClick={() => typeof page === 'number' && handlePageChange(page)}
                   disabled={page === '...'}
                   className={`
-                    px-3 py-2 rounded-md text-sm min-w-[2.5rem]
-                    ${
-                      page === currentPage
-                        ? 'bg-indigo-600 text-white font-medium'
-                        : 'bg-white border hover:bg-gray-50'
-                    }
-                    ${page === '...' ? 'cursor-default' : ''}
+                    px-4 py-2 rounded-md text-sm min-w-[2.6rem] font-medium
+                    ${page === currentPage
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white border border-gray-300 hover:bg-gray-50'}
+                    ${page === '...' ? 'cursor-default bg-transparent border-none' : ''}
                   `}
                 >
                   {page}
@@ -241,7 +246,7 @@ export default function RandomProductsPage() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-white border rounded-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                className="px-5 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
               >
                 Next
               </button>
