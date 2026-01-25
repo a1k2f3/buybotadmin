@@ -139,6 +139,7 @@ export default function StoresPage() {
             <TableHead>Name</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Wallet Balance</TableHead>
+            <TableHead>email</TableHead>
             <TableHead>Reviews</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -148,6 +149,7 @@ export default function StoresPage() {
             <TableRow key={s._id}>
               <TableCell>{s._id}</TableCell>
               <TableCell>{s.name}</TableCell>
+              <TableCell>{s.email}</TableCell>
               <TableCell>
                 <Badge
                   variant={
