@@ -1,183 +1,156 @@
-// app/admin/page.tsx
+// app/admin/login/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Users,
-  Store,
-  ShoppingCart,
-  DollarSign,
-  Download,
-} from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { exportToCSV } from "@/lib/exportToCSV";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Shield, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils"; // ← create this or use class-variance-authority
 
-type Stats = {
-  stores: number;
-  users: number;
-  pendingRequests: number;
-  totalSales: number;
-};
+const formSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
-const revenueData = [
-  { month: "Jan", revenue: 12000 },
-  { month: "Feb", revenue: 19000 },
-  { month: "Mar", revenue: 15000 },
-  { month: "Apr", revenue: 25000 },
-  { month: "May", revenue: 22000 },
-  { month: "Jun", revenue: 30000 },
-];
+type FormData = z.infer<typeof formSchema>;
 
-export default function Dashboard() {
-  const [stats, setStats] = useState<Stats>({
-    stores: 0,
-    users: 0,
-    pendingRequests: 0,
-    totalSales: 0,
+export default function AdminLoginPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      // Replace with real API
-      const mock = {
-        stores: 142,
-        users: 5432,
-        pendingRequests: 7,
-        totalSales: 1234567,
-      };
-      setStats(mock);
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+  const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
+    setError(null);
 
-  const items = [
-    {
-      title: "Stores",
-      value: stats.stores,
-      icon: Store,
-      color: "text-blue-600",
-    },
-    {
-      title: "Users",
-      value: stats.users.toLocaleString(),
-      icon: Users,
-      color: "text-green-600",
-    },
-    {
-      title: "Pending Requests",
-      value: stats.pendingRequests,
-      icon: ShoppingCart,
-      color: "text-orange-600",
-    },
-    {
-      title: "Total Sales",
-      value: `$${stats.totalSales.toLocaleString()}`,
-      icon: DollarSign,
-      color: "text-indigo-600",
-    },
-  ];
+    try {
+      const res = await fetch(`${process.env. NEXT_PUBLIC_API_BASE_URL}/api/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-  const handleExport = () => {
-    exportToCSV(
-      [
-        { metric: "Stores", value: stats.stores },
-        { metric: "Users", value: stats.users },
-        { metric: "Pending Requests", value: stats.pendingRequests },
-        { metric: "Total Sales", value: stats.totalSales },
-      ],
-      "dashboard_summary"
-    );
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || "Login failed");
+      }
+localStorage.setItem("adminToken", result.token); // Save token for authenticated requests
+      // Success → redirect to admin dashboard
+      router.push("/home");
+
+      router.refresh(); // refresh server components
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Loading dashboard...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Header + Export */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Button variant="outline" size="sm" onClick={handleExport}>
-          <Download className="w-4 h-4 mr-2" />
-          Export Summary
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {items.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Card key={item.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {item.title}
-                </CardTitle>
-                <Icon className={`w-5 h-5 ${item.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{item.value}</div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Revenue Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Revenue Trend (6 Months)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={revenueData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="month" className="text-xs" />
-                <YAxis className="text-xs" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--card)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--radius)",
-                  }}
-                  labelStyle={{ color: "var(--foreground)" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="var(--primary)"
-                  strokeWidth={2}
-                  dot={{ fill: "var(--primary)" }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-slate-800/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-black/40 p-8 md:p-10">
+          <div className="flex flex-col items-center mb-8">
+            <div className="p-3 bg-indigo-600/20 rounded-full mb-4">
+              <Shield className="h-10 w-10 text-indigo-400" />
+            </div>
+            <h1 className="text-3xl font-bold text-white">Admin Login</h1>
+            <p className="text-slate-400 mt-2">Access the administration panel</p>
           </div>
-        </CardContent>
-      </Card>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-slate-300 mb-1.5"
+              >
+                Username / Email
+              </label>
+              <input
+                id="username"
+                type="text"
+                autoComplete="email"
+                autoFocus
+                {...register("email")}
+                className={cn(
+                  "w-full px-4 py-3 bg-slate-900/60 border border-slate-600 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition",
+                  errors.email && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                )}
+                placeholder="admin@example.com"
+              />
+              {errors.email && (
+                <p className="mt-1.5 text-sm text-red-400">{errors.email.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-slate-300 mb-1.5"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                {...register("password")}
+                className={cn(
+                  "w-full px-4 py-3 bg-slate-900/60 border border-slate-600 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition",
+                  errors.password && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                )}
+                placeholder="••••••••"
+              />
+              {errors.password && (
+                <p className="mt-1.5 text-sm text-red-400">{errors.password.message}</p>
+              )}
+            </div>
+
+            {error && (
+              <div className="bg-red-950/40 border border-red-800 text-red-300 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={cn(
+                "w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed",
+                isLoading && "opacity-70 cursor-not-allowed"
+              )}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Signing in...
+                </span>
+              ) : (
+                "Sign In"
+              )}
+            </button>
+          </form>
+
+          <p className="text-center text-slate-500 text-sm mt-8">
+            Protected area — unauthorized access is prohibited
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
