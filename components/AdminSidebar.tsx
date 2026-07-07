@@ -26,6 +26,7 @@ const menu = [
   { href: "/stores", label: "Stores", icon: Store },
   { href: "/users", label: "Users", icon: Users },
   { href: "/sales", label: "Sales & Orders", icon: ShoppingCart },
+  { href: "/guestorder", label: "Guest Orders", icon: ShoppingCart },
   { href: "/reviews", label: "Reviews", icon: MessageSquare },
   { href: "/messaging", label: "Messaging", icon: MessageSquare },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
