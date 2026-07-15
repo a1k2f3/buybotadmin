@@ -41,6 +41,7 @@ export default function GuestOrdersAdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<GuestOrder | null>(null);
+  const [updating, setUpdating] = useState(false);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
@@ -62,6 +63,35 @@ export default function GuestOrdersAdminPage() {
       setError(err.message || "Failed to load guest orders");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateGuestOrderStatus = async (status?: string, paymentStatus?: string) => {
+    if (!selectedOrder) return;
+
+    setUpdating(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/guest-orders/${selectedOrder._id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, paymentStatus }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update order status");
+
+      const data = await res.json();
+      
+      // Update local state
+      setSelectedOrder(data.order);
+      
+      // Refresh the orders list
+      await fetchGuestOrders();
+
+      alert("Order status updated successfully");
+    } catch (err: any) {
+      alert(err.message || "Failed to update order status");
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -183,6 +213,44 @@ export default function GuestOrdersAdminPage() {
             </div>
 
             <div className="p-6 space-y-8">
+              {/* Status Update Section - Added */}
+              <div className="bg-gray-50 p-6 rounded-xl border">
+                <h3 className="font-semibold mb-4">Update Order Status</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Order Status</label>
+                    <select
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                      defaultValue={selectedOrder.status}
+                      onChange={(e) => updateGuestOrderStatus(e.target.value, undefined)}
+                      disabled={updating}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
+                    <select
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                      defaultValue={selectedOrder.paymentStatus}
+                      onChange={(e) => updateGuestOrderStatus(undefined, e.target.value)}
+                      disabled={updating}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Paid">Paid</option>
+                      <option value="Failed">Failed</option>
+                      <option value="Refunded">Refunded</option>
+                    </select>
+                  </div>
+                </div>
+                {updating && <p className="text-sm text-indigo-600 mt-2">Updating...</p>}
+              </div>
+
               {/* Guest Info */}
               <div>
                 <h3 className="font-semibold mb-3">Customer Information</h3>
