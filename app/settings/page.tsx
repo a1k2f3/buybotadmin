@@ -105,7 +105,7 @@ export default function SettingsPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="currency">Currency</Label>
                 <Select
@@ -154,7 +154,7 @@ export default function SettingsPage() {
             <CardDescription>Email alert preferences</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 sm:items-center">
               <div>
                 <Label htmlFor="emailNotifications">Email Notifications</Label>
                 <p className="text-sm text-muted-foreground">
@@ -163,6 +163,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 id="emailNotifications"
+                className="shrink-0"
                 checked={watch("emailNotifications")}
                 onCheckedChange={(checked) => setValue("emailNotifications", checked)}
               />
@@ -180,7 +181,7 @@ export default function SettingsPage() {
             <CardDescription>Protect your admin account</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 sm:items-center">
               <div>
                 <Label htmlFor="twoFactorAuth">Two-Factor Authentication</Label>
                 <p className="text-sm text-muted-foreground">
@@ -189,6 +190,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 id="twoFactorAuth"
+                className="shrink-0"
                 checked={watched2FA}
                 onCheckedChange={(checked) => setValue("twoFactorAuth", checked)}
               />

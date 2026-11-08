@@ -125,16 +125,16 @@ export default function RegisterStore() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-full mx-auto"> {/* Changed to max-w-full for whole page coverage */}
+    <div className="min-h-0 bg-gray-50 py-6 px-0 sm:px-4 sm:py-12">
+      <div className="mx-auto max-w-5xl">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-900">Register Your Store</h1>
-          <p className="mt-3 text-lg text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Register Your Store</h1>
+          <p className="mt-3 text-base text-gray-600 sm:text-lg">
             Submit your store details for admin approval
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
+        <div className="rounded-xl bg-white p-4 shadow-lg sm:p-8">
           {successMessage && (
             <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
               {successMessage}
@@ -283,7 +283,7 @@ export default function RegisterStore() {
               </>
             )}
 
-            <div className="pt-6 flex justify-between">
+            <div className="flex flex-col-reverse justify-between gap-3 pt-6 sm:flex-row">
               {currentStep > 1 && (
                 <button
                   type="button"

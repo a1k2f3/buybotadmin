@@ -168,16 +168,16 @@ export default function CreateCategory() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-0 bg-gray-50 py-6 px-0 sm:px-4 sm:py-12">
+            <div className="mx-auto max-w-4xl">
                 <div className="text-center mb-10">
-                    <h1 className="text-4xl font-bold text-gray-900">Create Category</h1>
-                    <p className="mt-3 text-lg text-gray-600">
+                    <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Create Category</h1>
+                    <p className="mt-3 text-base text-gray-600 sm:text-lg">
                         Add a new category to the system
                     </p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-lg p-8">
+                <div className="rounded-xl bg-white p-4 shadow-lg sm:p-8">
                     {successMessage && (
                         <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                             {successMessage}

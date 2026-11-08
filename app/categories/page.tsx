@@ -109,9 +109,9 @@ function Page() {
 
   return (
     <div style={styles.container}>
-      <div className="flex flex-row justify-between items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">All Categories</h1>
-        <Link href="/categories/add">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">All Categories</h1>
+        <Link href="/categories/add" className="w-full sm:w-auto">
           <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
             Add Categories
           </button>
@@ -156,14 +156,14 @@ function Page() {
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    maxWidth: '1200px',
+    maxWidth: '1240px',
     margin: '0 auto',
-    padding: '20px',
+    padding: 'clamp(0.75rem, 3vw, 1.25rem)',
     fontFamily: 'Arial, sans-serif',
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
     gap: '20px',
   },
   card: {

@@ -115,23 +115,26 @@ export default function StoresPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Store Management</h1>
-
-      <Input
-        placeholder="Search stores..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-sm"
-      />
-      <Button onClick={handleExport} variant="outline">
-        Export CSV
-      </Button>
-      <Link href="/stores/rigester">
-        <Button variant="outline" className="gap-2">
-          <Store className="w-4 h-4" />
-          Register Store
-        </Button>
-      </Link>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold sm:text-3xl">Store Management</h1>
+        <div className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-2">
+          <Input
+            placeholder="Search stores..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full min-w-0 sm:col-span-2"
+          />
+          <Button onClick={handleExport} variant="outline">
+            Export CSV
+          </Button>
+          <Link href="/stores/rigester" className="w-full">
+            <Button variant="outline" className="w-full gap-2">
+              <Store className="h-4 w-4" />
+              Register Store
+            </Button>
+          </Link>
+        </div>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>

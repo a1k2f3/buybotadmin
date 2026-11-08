@@ -117,11 +117,11 @@ export default function RandomProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-2 sm:px-4">
+    <div className="min-h-0 bg-gray-50 py-6 px-0 sm:px-2 sm:py-10">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-center mb-8">Explore Products</h1>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {products.map((product) => {
             const hasDiscount =
               product.discountPrice != null &&

@@ -163,9 +163,9 @@ export default function SalesPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Sales & Orders</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <h1 className="text-2xl font-bold sm:text-3xl">Sales & Orders</h1>
         <Button onClick={fetchOrders} variant="outline" size="sm">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
@@ -179,9 +179,9 @@ export default function SalesPage() {
         </TabsList>
 
         <TabsContent value="orders" className="space-y-4">
-          <div className="flex gap-4 items-center">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -288,7 +288,7 @@ export default function SalesPage() {
                             <div className="space-y-6 py-4">
                               <section>
                                 <h3 className="font-semibold mb-2">Customer</h3>
-                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                                   <div><span className="text-muted-foreground">Name:</span> {order.userId.name}</div>
                                   <div><span className="text-muted-foreground">Email:</span> {order.userId.email}</div>
                                   <div><span className="text-muted-foreground">Phone:</span> {order.userId.phone || "N/A"}</div>
@@ -310,7 +310,7 @@ export default function SalesPage() {
                                 <h3 className="font-semibold mb-3">Items ({order.items.length})</h3>
                                 <div className="space-y-6">
                                   {order.items.map((item) => (
-                                    <div key={item._id} className="border rounded-lg p-6 flex gap-6">
+                                    <div key={item._id} className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:gap-6 sm:p-6">
                                       {item.productId.thumbnail ? (
                                         <div className="flex-shrink-0">
                                           <Image
@@ -351,7 +351,7 @@ export default function SalesPage() {
                               </section>
 
                               <section className="border-t pt-4">
-                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                                   <div><span className="text-muted-foreground">Total Amount:</span> <strong>₹{order.totalAmount.toLocaleString("en-IN")}</strong></div>
                                   <div><span className="text-muted-foreground">Payment Method:</span> {order.paymentMethod}</div>
                                   <div><span className="text-muted-foreground">Payment Status:</span> 
